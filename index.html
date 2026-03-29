@@ -43,6 +43,11 @@
     </div>
 
     <script>
+        // ==========================================
+        // IMPORTANT: PASTE YOUR RENDER URL RIGHT HERE (Do not put a slash at the end)
+        const RENDER_URL = 'YOUR_RENDER_URL_HERE'; 
+        // ==========================================
+
         const input = document.getElementById('link-input');
         const passcodeInput = document.getElementById('passcode-input');
         const extractBtn = document.getElementById('extract-btn');
@@ -60,8 +65,7 @@
             extractBtn.disabled = true;
 
             try {
-                // IMPORTANT: Replace this with your actual Render URL!
-                const response = await fetch('https://secure-fetch-engine.onrender.com/extract', {
+                const response = await fetch(`${RENDER_URL}/extract`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url, passcode: secretCode }) 
@@ -70,10 +74,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // This changes the container styles to cleanly wrap whatever aspect ratio the video has
                     videoContainer.className = "w-full bg-gray-900 rounded-xl border border-gray-600 mb-6 overflow-hidden shadow-inner";
-                    
-                    // The 'h-auto' class ensures the video scales naturally
                     videoContainer.innerHTML = `
                         <video src="${data.video_url}" controls autoplay loop muted 
                                class="w-full h-auto block rounded-xl">
@@ -81,7 +82,10 @@
                     `;
                     
                     downloadBtn.style.display = 'block';
-                    downloadBtn.onclick = () => window.open(data.video_url, '_blank');
+                    // THE FIX: Routes the download request through your Render server
+                    downloadBtn.onclick = () => {
+                        window.location.href = `${RENDER_URL}/download?url=${encodeURIComponent(data.video_url)}`;
+                    };
                 } else {
                     alert(data.error); 
                 }
